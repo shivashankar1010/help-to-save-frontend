@@ -118,42 +118,6 @@ class AccessAccountControllerSpec extends AuthSupport with EnrolmentAndEligibili
 
     }
 
-    "handling getCloseAccountPage" must {
-
-      "return the close account are you sure page if they have a help-to-save account" in {
-        inSequence {
-          mockAuthWithNINORetrievalWithSuccess(AuthWithCL200)(Some(nino))
-          mockEnrolmentCheck()(Right(Enrolled(true)))
-        }
-
-        val result = controller.getCloseAccountPage(fakeRequestWithCSRFToken)
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(appConfig.closeAccountUrl)
-      }
-
-      "redirect the user to the no account page if they are not enrolled in help-to-save" in {
-        inSequence {
-          mockAuthWithNINORetrievalWithSuccess(AuthWithCL200)(Some(nino))
-          mockEnrolmentCheck()(Right(NotEnrolled))
-        }
-
-        val result = controller.getCloseAccountPage(fakeRequestWithCSRFToken)
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AccessAccountController.getNoAccountPage().url)
-      }
-
-      "throw an Internal Server Error if the enrolment check fails" in {
-        inSequence {
-          mockAuthWithNINORetrievalWithSuccess(AuthWithCL200)(Some(nino))
-          mockEnrolmentCheck()(Left("An error occurred"))
-        }
-
-        val result = controller.getCloseAccountPage(fakeRequestWithCSRFToken)
-        status(result) shouldBe 500
-      }
-
-    }
-
       def commonBehaviour(doRequest: () ⇒ Future[Result]): Unit = {
         "redirect to NS&I if the user is enrolled" in {
           inSequence {
