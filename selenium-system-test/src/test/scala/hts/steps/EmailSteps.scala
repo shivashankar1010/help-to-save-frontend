@@ -16,6 +16,8 @@
 
 package hts.steps
 
+import java.util.UUID
+
 import hts.browser.Browser
 import hts.pages._
 import hts.utils.ScenarioContext
@@ -63,8 +65,35 @@ class EmailSteps extends Steps {
     SelectEmailPage.setAndVerifyNewEmail("newemail@gmail.com")
   }
 
-  Then("^they see the email verification page$") {
+  Then("^they see the verify your email page$") {
     Browser.checkCurrentPageIs(VerifyYourEmailPage)
   }
 
+  Given("^an applicant has NOT already had their new email address verified$") { () =>
+    randomEmail = generateEmail()
+    println("randomly generated email: " + randomEmail + "\n")
+  }
+
+  Given("^they submit their new email address for Help to Save$") { () =>
+    AuthorityWizardPage.authenticateEligibleUser(EligiblePage.expectedURL, ScenarioContext.generateEligibleNINO())
+    EligiblePage.clickConfirmAndContinue()
+    Browser.checkCurrentPageIs(SelectEmailPage)
+    SelectEmailPage.setAndVerifyNewEmail(randomEmail)
+  }
+
+  When("^they click on the email verification link$") { () =>
+    var token = ""
+    driver.navigate().to(s"https://test-www.tax.service.gov.uk/email-verification/verify?token=$token")
+  }
+
+  Then("^they see that their email address has been successfully verified$") { () =>
+    Browser.checkCurrentPageIs(EmailVerified)
+    Browser.isTextOnPage(randomEmail)
+  }
+
+  def generateEmail(): String = {
+    s"${UUID.randomUUID().toString}@mail.com"
+  }
+
+  var randomEmail = ""
 }
